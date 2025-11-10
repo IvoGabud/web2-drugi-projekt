@@ -215,7 +215,7 @@ function SensitiveDataExposure() {
       </div>
 
       <div className="bg-white border border-gray-300 p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-semibold text-gray-900">
             Podaci iz baze
           </h3>
@@ -227,6 +227,9 @@ function SensitiveDataExposure() {
             {loading ? 'Učitavam...' : 'Osvježi'}
           </button>
         </div>
+        <p className="text-sm text-gray-600 mb-4">
+          Podaci su prikazani točno onako kako su zapisani u bazi podataka.
+        </p>
 
         {data && data.success && data.data && data.data.length > 0 ? (
           <div className="overflow-x-auto">
