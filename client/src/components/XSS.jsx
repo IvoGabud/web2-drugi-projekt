@@ -101,13 +101,18 @@ function XSS() {
     <div className="space-y-6">
       {/* Title */}
       <div className="bg-white border border-gray-300 p-6">
-        <h2 className="text-2xl font-semibold text-gray-900">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
           Cross-Site Scripting (XSS) - Stored XSS
         </h2>
+        <p className="text-sm text-gray-600">
+          Demonstracija prikazuje primjer pohranjenog XSS napada koji omogućava napadaču ubacivanje zlonamjernog JavaScript koda kroz komentar.
+          Kada je ranjivost uključena, skripte se izvršavaju u pregledniku svake osobe koja posjeti stranicu.
+          Kada je zaštita uključena, sadržaj komentara se sanitizira prije pohrane u bazu.
+        </p>
       </div>
 
       {/* Vulnerability Toggle */}
-      <div className={`border p-6 ${xssProtectionEnabled ? 'bg-white border-gray-400' : 'bg-gray-50 border-gray-500'}`}>
+      <div className="bg-white border border-gray-300 p-6">
         <label className="flex items-center cursor-pointer">
           <div className="relative">
             <input
@@ -116,8 +121,8 @@ function XSS() {
               onChange={(e) => setXssProtectionEnabled(e.target.checked)}
               className="sr-only"
             />
-            <div className={`block w-14 h-8 border transition ${xssProtectionEnabled ? 'bg-gray-700 border-gray-700' : 'bg-gray-400 border-gray-400'}`}></div>
-            <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 border border-gray-300 transition transform ${xssProtectionEnabled ? 'translate-x-6' : ''}`}></div>
+            <div className={`block w-14 h-8 rounded-full transition ${xssProtectionEnabled ? 'bg-gray-800' : 'bg-gray-400'}`}></div>
+            <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition transform ${xssProtectionEnabled ? 'translate-x-6' : ''}`}></div>
           </div>
           <div className="ml-4">
             <span className="text-base font-medium text-gray-900">
@@ -125,15 +130,6 @@ function XSS() {
             </span>
           </div>
         </label>
-
-        {!xssProtectionEnabled && (
-          <div className="mt-4 bg-white border border-gray-400 p-3">
-            <div>
-              <strong className="text-gray-900">UPOZORENJE:</strong>
-              <span className="text-gray-700"> XSS zaštita je isključena! Zlonamjerni skriptovi će se izvršiti.</span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Comment Form */}
@@ -177,7 +173,7 @@ function XSS() {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white font-medium py-2 px-6 transition"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-6 transition"
             >
               {loading ? 'Šaljem...' : 'Dodaj komentar'}
             </button>
@@ -186,7 +182,7 @@ function XSS() {
               onClick={handleClearComments}
               className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-6 transition"
             >
-              Obriši sve
+              Obriši sve komentare
             </button>
           </div>
         </form>
@@ -215,7 +211,6 @@ function XSS() {
         {comments.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <p className="text-sm font-medium">Nema komentara.</p>
-            <p className="text-xs">Budite prvi koji će dodati komentar!</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -223,7 +218,7 @@ function XSS() {
               <div key={c.id} className="bg-gray-50 p-4 border border-gray-200">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gray-700 flex items-center justify-center text-white text-sm font-medium">
+                    <div className="w-8 h-8 bg-blue-600 flex items-center justify-center text-white text-sm font-medium">
                       {c.username.charAt(0).toUpperCase()}
                     </div>
                     <strong className="text-gray-900">{c.username}</strong>

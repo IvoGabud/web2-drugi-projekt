@@ -11,7 +11,6 @@ function SensitiveDataExposure() {
     password: '',
     creditCard: ''
   });
-  const [message, setMessage] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -52,7 +51,6 @@ function SensitiveDataExposure() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage(null);
 
     try {
       const response = await fetch('/api/sensitive-data', {
@@ -67,7 +65,6 @@ function SensitiveDataExposure() {
       });
 
       const result = await response.json();
-      setMessage(result);
 
       if (result.success) {
         setFormData({
@@ -80,10 +77,7 @@ function SensitiveDataExposure() {
         fetchData();
       }
     } catch (error) {
-      setMessage({
-        success: false,
-        message: 'Greška pri spremanju podataka',
-      });
+      console.error('Greška pri spremanju podataka:', error);
     } finally {
       setLoading(false);
     }
@@ -93,9 +87,14 @@ function SensitiveDataExposure() {
     <div className="space-y-6">
       {/* Title */}
       <div className="bg-white border border-gray-300 p-6">
-        <h2 className="text-2xl font-semibold text-gray-900">
-          Sensitive Data Exposure
+        <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          Nesigurna pohrana osjetljivih podataka
         </h2>
+        <p className="text-sm text-gray-600">
+          Ova ranjivost demonstrira opasnost pohranjivanja osjetljivih podataka bez enkripcije.
+          Kada je ranjivost uključena, lozinke i brojevi kreditnih kartica se spremaju u plain text formatu u bazu podataka.
+          Kada je zaštita uključena, lozinke i kreditne kartice se kriptiraju prije pohrane u bazu podataka.
+        </p>
       </div>
 
       {/* Vulnerability Toggle */}
@@ -113,19 +112,10 @@ function SensitiveDataExposure() {
           </div>
           <div className="ml-4">
             <span className="text-base font-medium text-gray-900">
-              Ranjivost {exposureEnabled ? 'uključena (NESIGURNO)' : 'isključena (sigurno)'}
+              Ranjivosti {exposureEnabled ? 'uključene (pohrana lozinki u plain textu)' : 'isključene (sigurno)'}
             </span>
           </div>
         </label>
-
-        {exposureEnabled && (
-          <div className="mt-4 bg-gray-100 border border-gray-400 p-3">
-            <div>
-              <strong className="text-gray-900">UPOZORENJE:</strong>
-              <span className="text-gray-700"> Osjetljivi podaci se prikazuju u plain textu!</span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Data Entry Form */}
@@ -220,81 +210,68 @@ function SensitiveDataExposure() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white font-medium py-2 px-6 transition"
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-6 transition"
           >
             {loading ? 'Spremam...' : 'Spremi podatke'}
           </button>
         </form>
 
-        {message && (
-          <div className={`mt-4 p-4 border ${message.success ? 'bg-white border-gray-500' : 'bg-gray-50 border-gray-600'}`}>
-            <p className="font-medium text-gray-900">
-              {message.message}
-            </p>
+      </div>
+
+      {/* Data Display with integrated refresh button */}
+      <div className="bg-white border border-gray-300 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Podaci iz baze
+          </h3>
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 transition"
+          >
+            {loading ? 'Učitavam...' : 'Osvježi'}
+          </button>
+        </div>
+
+        {data && data.success && data.data && data.data.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-gray-300">
+              <thead className="bg-gray-200">
+                <tr>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Status pohrane</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">ID</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Ime</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Prezime</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Korisničko ime</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Lozinka</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Kreditna kartica</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.data.map((item, index) => (
+                  <tr key={item.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-200`}>
+                    <td className="px-4 py-3 text-sm">
+                      <span className={`px-2 py-1 text-xs font-semibold ${item.is_encrypted ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {item.is_encrypted ? 'SIGURNO (šifrirano)' : 'NESIGURNO (plain text)'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{item.id}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{item.first_name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{item.last_name}</td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{item.username}</td>
+                    <td className="px-4 py-3 text-sm font-mono text-gray-900">{item.password}</td>
+                    <td className="px-4 py-3 text-sm font-mono text-gray-900">{item.credit_card}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-12 text-gray-500">
+            <p className="text-sm font-medium">Nema podataka u bazi.</p>
           </div>
         )}
       </div>
-
-      {/* Fetch Button */}
-      <div className="bg-white border border-gray-300 p-6">
-        <button
-          onClick={handleRefresh}
-          disabled={loading}
-          className="w-full bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white font-medium py-3 px-6 transition duration-200"
-        >
-          {loading ? (
-            'Učitavam...'
-          ) : (
-            'Prikaži podatke iz baze'
-          )}
-        </button>
-      </div>
-
-      {/* Data Display */}
-      {data && data.success && (
-        <div className="bg-white border border-gray-300 p-6">
-          <div className="mb-4 p-4 border border-gray-300 bg-gray-50">
-            <p className="font-medium text-gray-900">
-              Status: {data.message}
-            </p>
-          </div>
-
-          {data.data && data.data.length > 0 && (
-            <div className="overflow-x-auto">
-              <table className="min-w-full border border-gray-300">
-                <thead className="bg-gray-200">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Status pohrane</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">ID</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Ime</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Prezime</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Korisničko ime</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Lozinka</th>
-                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Kreditna kartica</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.data.map((item, index) => (
-                    <tr key={item.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-200`}>
-                      <td className="px-4 py-3 text-sm">
-                        <span className={`px-2 py-1 text-xs font-semibold ${item.is_encrypted ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                          {item.is_encrypted ? 'SIGURNO (šifrirano)' : 'NESIGURNO (plain text)'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{item.id}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{item.first_name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{item.last_name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{item.username}</td>
-                      <td className="px-4 py-3 text-sm font-mono text-gray-900">{item.password}</td>
-                      <td className="px-4 py-3 text-sm font-mono text-gray-900">{item.credit_card}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
