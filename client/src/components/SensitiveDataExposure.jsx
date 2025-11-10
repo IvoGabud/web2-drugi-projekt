@@ -85,7 +85,6 @@ function SensitiveDataExposure() {
 
   return (
     <div className="space-y-6">
-      {/* Title */}
       <div className="bg-white border border-gray-300 p-6">
         <h2 className="text-2xl font-semibold text-gray-900 mb-2">
           Nesigurna pohrana osjetljivih podataka
@@ -97,7 +96,6 @@ function SensitiveDataExposure() {
         </p>
       </div>
 
-      {/* Vulnerability Toggle */}
       <div className="bg-white border border-gray-300 p-6">
         <label className="flex items-center cursor-pointer">
           <div className="relative">
@@ -118,7 +116,6 @@ function SensitiveDataExposure() {
         </label>
       </div>
 
-      {/* Data Entry Form */}
       <div className="bg-white border border-gray-300 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Unos osjetljivih podataka
@@ -215,10 +212,8 @@ function SensitiveDataExposure() {
             {loading ? 'Spremam...' : 'Spremi podatke'}
           </button>
         </form>
-
       </div>
 
-      {/* Data Display with integrated refresh button */}
       <div className="bg-white border border-gray-300 p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">

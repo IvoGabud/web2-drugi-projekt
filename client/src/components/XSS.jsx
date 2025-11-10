@@ -14,16 +14,20 @@ function XSS() {
 
   useEffect(() => {
     if (!xssProtectionEnabled) {
-      const commentElements = document.querySelectorAll('.comment-body');
-      commentElements.forEach(element => {
-        const scripts = element.querySelectorAll('script');
-        scripts.forEach(script => {
-          const newScript = document.createElement('script');
-          newScript.textContent = script.textContent;
-          document.body.appendChild(newScript);
-          document.body.removeChild(newScript);
+      setTimeout(() => {
+        const commentElements = document.querySelectorAll('.comment-body');
+        commentElements.forEach(element => {
+          const scripts = element.querySelectorAll('script');
+          scripts.forEach(script => {
+            try {
+              const func = new Function(script.textContent);
+              func();
+            } catch (e) {
+              console.error('Script execution error:', e);
+            }
+          });
         });
-      });
+      }, 100);
     }
   }, [comments, xssProtectionEnabled]);
 
@@ -97,21 +101,39 @@ function XSS() {
     }
   };
 
+  const sanitizeComment = (html) => {
+    const temp = document.createElement('div');
+    temp.textContent = html;
+    return temp.innerHTML;
+  };
+
+  const getDisplayComment = (comment) => {
+    if (xssProtectionEnabled) {
+      return sanitizeComment(comment);
+    }
+    return comment;
+  };
+
   return (
     <div className="space-y-6">
-      {/* Title */}
       <div className="bg-white border border-gray-300 p-6">
         <h2 className="text-2xl font-semibold text-gray-900 mb-2">
           Cross-Site Scripting (XSS) - Stored XSS
         </h2>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 mb-3">
           Demonstracija prikazuje primjer pohranjenog XSS napada koji omogućava napadaču ubacivanje zlonamjernog JavaScript koda kroz komentar.
           Kada je ranjivost uključena, skripte se izvršavaju u pregledniku svake osobe koja posjeti stranicu.
           Kada je zaštita uključena, sadržaj komentara se sanitizira prije pohrane u bazu.
         </p>
+        <div className="text-sm text-gray-600">
+          <strong>Primjeri za testiranje:</strong>
+          <div className="mt-1 space-y-1 font-mono text-xs">
+            <div>&lt;script&gt;alert('XSS napad!')&lt;/script&gt;</div>
+            <div>&lt;img src=x onerror="alert('XSS putem slike')"&gt;</div>
+          </div>
+        </div>
       </div>
 
-      {/* Vulnerability Toggle */}
       <div className="bg-white border border-gray-300 p-6">
         <label className="flex items-center cursor-pointer">
           <div className="relative">
@@ -121,18 +143,17 @@ function XSS() {
               onChange={(e) => setXssProtectionEnabled(e.target.checked)}
               className="sr-only"
             />
-            <div className={`block w-14 h-8 rounded-full transition ${xssProtectionEnabled ? 'bg-gray-800' : 'bg-gray-400'}`}></div>
-            <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition transform ${xssProtectionEnabled ? 'translate-x-6' : ''}`}></div>
+            <div className={`block w-14 h-8 rounded-full transition ${!xssProtectionEnabled ? 'bg-gray-800' : 'bg-gray-400'}`}></div>
+            <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition transform ${!xssProtectionEnabled ? 'translate-x-6' : ''}`}></div>
           </div>
           <div className="ml-4">
             <span className="text-base font-medium text-gray-900">
-              Ranjivost {xssProtectionEnabled ? 'isključena (sigurno)' : 'uključena (XSS moguć)'}
+              Ranjivosti {!xssProtectionEnabled ? 'uključene (XSS moguć)' : 'isključene (sigurno)'}
             </span>
           </div>
         </label>
       </div>
 
-      {/* Comment Form */}
       <div className="bg-white border border-gray-300 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Dodaj komentar
@@ -187,7 +208,6 @@ function XSS() {
           </div>
         </form>
 
-        {/* Message Display */}
         {message && (
           <div className={`mt-4 p-4 border ${message.success ? 'bg-white border-gray-500' : 'bg-gray-50 border-gray-600'}`}>
             <p className="font-medium text-gray-900">
@@ -202,7 +222,6 @@ function XSS() {
         )}
       </div>
 
-      {/* Comments List */}
       <div className="bg-white border border-gray-300 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           Komentari ({comments.length})
@@ -229,7 +248,7 @@ function XSS() {
                 </div>
                 <div
                   className="text-gray-800 pl-10 comment-body"
-                  dangerouslySetInnerHTML={{ __html: c.comment }}
+                  dangerouslySetInnerHTML={{ __html: getDisplayComment(c.comment) }}
                 />
               </div>
             ))}

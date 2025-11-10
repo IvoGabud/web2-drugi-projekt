@@ -60,7 +60,7 @@ app.post('/api/comments', async (req, res) => {
 
     res.json({
       success: true,
-      message: xssProtectionEnabled ? 'Komentar dodan (sanitiziran)' : 'Komentar dodan (NESIGURNO - XSS moguć!)',
+      message: xssProtectionEnabled ? 'Komentar je sanitiziran' : 'Komentar je dodan bez sanitizacije',
       comment: result.rows[0],
       protected: xssProtectionEnabled
     });
