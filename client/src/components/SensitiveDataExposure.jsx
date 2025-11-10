@@ -33,12 +33,6 @@ function SensitiveDataExposure() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (data !== null) {
-      fetchData();
-    }
-  }, [exposureEnabled]);
-
   const handleToggle = () => {
     setExposureEnabled(!exposureEnabled);
   };
@@ -270,6 +264,7 @@ function SensitiveDataExposure() {
               <table className="min-w-full border border-gray-300">
                 <thead className="bg-gray-200">
                   <tr>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Status pohrane</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">ID</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Ime</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900 border-b border-gray-300">Prezime</th>
@@ -281,6 +276,11 @@ function SensitiveDataExposure() {
                 <tbody>
                   {data.data.map((item, index) => (
                     <tr key={item.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-200`}>
+                      <td className="px-4 py-3 text-sm">
+                        <span className={`px-2 py-1 text-xs font-semibold ${item.is_encrypted ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                          {item.is_encrypted ? 'SIGURNO (šifrirano)' : 'NESIGURNO (plain text)'}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 text-sm text-gray-900">{item.id}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{item.first_name}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{item.last_name}</td>

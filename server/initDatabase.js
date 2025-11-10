@@ -1,21 +1,18 @@
 import pool from './db.js';
 
 const initSQL = `
-CREATE TABLE IF NOT EXISTS comments (
+DROP TABLE IF EXISTS sensitive_data CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS comments CASCADE;
+
+CREATE TABLE comments (
   id SERIAL PRIMARY KEY,
   username VARCHAR(100) NOT NULL,
   comment TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(100) UNIQUE NOT NULL,
-  email VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS sensitive_data (
+CREATE TABLE sensitive_data (
   id SERIAL PRIMARY KEY,
   first_name VARCHAR(255),
   last_name VARCHAR(255),
@@ -26,8 +23,8 @@ CREATE TABLE IF NOT EXISTS sensitive_data (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_comments_created_at ON comments(created_at);
-CREATE INDEX IF NOT EXISTS idx_sensitive_data_created_at ON sensitive_data(created_at);
+CREATE INDEX idx_comments_created_at ON comments(created_at);
+CREATE INDEX idx_sensitive_data_created_at ON sensitive_data(created_at);
 `;
 
 export async function initializeDatabase() {

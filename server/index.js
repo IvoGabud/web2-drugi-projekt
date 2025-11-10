@@ -106,16 +106,10 @@ app.post('/api/sensitive-data', async (req, res) => {
   const { firstName, lastName, username, password, creditCard, encryptionEnabled } = req.body;
 
   try {
-    let storedFirstName = firstName;
-    let storedLastName = lastName;
-    let storedUsername = username;
     let storedPassword = password;
     let storedCreditCard = creditCard;
 
     if (encryptionEnabled) {
-      storedFirstName = encrypt(firstName);
-      storedLastName = encrypt(lastName);
-      storedUsername = encrypt(username);
       storedPassword = encrypt(password);
       storedCreditCard = encrypt(creditCard);
     }
@@ -127,9 +121,9 @@ app.post('/api/sensitive-data', async (req, res) => {
     `;
 
     await pool.query(query, [
-      storedFirstName,
-      storedLastName,
-      storedUsername,
+      firstName,
+      lastName,
+      username,
       storedPassword,
       storedCreditCard,
       encryptionEnabled
@@ -138,8 +132,8 @@ app.post('/api/sensitive-data', async (req, res) => {
     res.json({
       success: true,
       message: encryptionEnabled
-        ? 'Podaci spremljeni ŠIFRIRANO u bazu (SIGURNO)'
-        : 'Podaci spremljeni u PLAIN TEXTU u bazu (NESIGURNO!)',
+        ? 'Podaci spremljeni - lozinka i kreditna kartica šifrirani (SIGURNO)'
+        : 'Podaci spremljeni u PLAIN TEXTU (NESIGURNO!)',
       encrypted: encryptionEnabled
     });
   } catch (error) {
@@ -151,41 +145,23 @@ app.post('/api/sensitive-data', async (req, res) => {
 });
 
 app.get('/api/sensitive-data', async (req, res) => {
-  const { exposureEnabled } = req.query;
-
   try {
     const result = await pool.query('SELECT * FROM sensitive_data ORDER BY created_at DESC');
 
-    const processedData = result.rows.map(row => {
-      if (row.is_encrypted) {
-        return {
-          id: row.id,
-          first_name: decrypt(row.first_name),
-          last_name: decrypt(row.last_name),
-          username: decrypt(row.username),
-          password: decrypt(row.password),
-          credit_card: decrypt(row.credit_card),
-          is_encrypted: true
-        };
-      } else {
-        return {
-          id: row.id,
-          first_name: row.first_name,
-          last_name: row.last_name,
-          username: row.username,
-          password: row.password,
-          credit_card: row.credit_card,
-          is_encrypted: false
-        };
-      }
-    });
+    const rawData = result.rows.map(row => ({
+      id: row.id,
+      first_name: row.first_name,
+      last_name: row.last_name,
+      username: row.username,
+      password: row.password,
+      credit_card: row.credit_card,
+      is_encrypted: row.is_encrypted
+    }));
 
     res.json({
       success: true,
-      message: exposureEnabled === 'true'
-        ? 'Prikazujem podatke iz baze (moguće šifrirani i plain text)'
-        : 'Prikazujem podatke iz baze',
-      data: processedData
+      message: 'Prikazujem RAW podatke iz baze',
+      data: rawData
     });
   } catch (error) {
     res.status(500).json({
